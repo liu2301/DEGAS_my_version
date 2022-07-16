@@ -1,9 +1,9 @@
 #***************************************************************
 #***************************************************************
 # Single Cell Transfer Learning Toolbox
-# Travis S Johnson, Zhi Huang, and Ziyu Liu
+# Travis S Johnson, Zhi Huang
 # Compatible with OSX and Linux
-
+# test committee changes
 #***************************************************************
 #***************************************************************
 # Initializing the package
