@@ -1,7 +1,7 @@
 #***************************************************************
 #***************************************************************
 # Single Cell Transfer Learning Toolbox
-# Travis S Johnson and Zhi Huang
+# Travis S Johnson, Zhi Huang, and Ziyu Liu
 # Compatible with OSX and Linux
 
 #***************************************************************
@@ -125,7 +125,7 @@ normalizeScale <-function(X){
 }
 
 preprocessCounts <- function(X){
-  return(normalizeScale(1.5^log2(X+1)))  
+  return(normalizeScale(1.5^log2(X+1)))
 }
 
 preprocessAllCounts <- function(sc.dat,pt.dat){
@@ -511,7 +511,7 @@ predClassBag <- function(ccModel,Exp,scORpat){
   out = Reduce("+", out) / length(out)
   return(out)
 }
-  
+
 # Predict patient class from proportions of single cell classes
 predPatClassFromSCClass <- function(ccModel1,Exp){
   Z1 = sigmoid(sweep((Exp %*% ccModel4@Theta4),2,ccModel1@Bias4,'+'))
