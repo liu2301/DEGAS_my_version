@@ -68,7 +68,7 @@ for i in range(train_steps+1):
         M = sess.run(cost_t, feed_dict=tensor_train)
         transportation_P = ot.emd(a=[], b=[], M=M)
         tensor_train[trans_P] = transportation_P
-        # We use original Earth Mover's Distance here
+        # We use original Earth Mover's Distance here, we will accomplish the regularized OT later
         # featureF, N_lsc = sess.run([layerF, lsc], feed_dict=tensor_train)
         # ot_lpl1 = ot.da.SinkhornLpl1Transport(reg_e=1e-1, reg_cl=2e0)
         # ot_lpl1.fit(Xs = featureF[int(N_lsc):, :], ys = tensor_train[ys_pat].argmax(1), Xt = featureF[:int(N_lsc), :])
