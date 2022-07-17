@@ -3,7 +3,7 @@
 # Single Cell Transfer Learning Toolbox
 # Travis S Johnson, Zhi Huang
 # Compatible with OSX and Linux
-# Ziyu Modified at July 15th, 2022
+# Ziyu Modified at July 15th, 2022, test again
 #***************************************************************
 #***************************************************************
 # Initializing the package
