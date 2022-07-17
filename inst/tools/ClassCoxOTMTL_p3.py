@@ -55,15 +55,14 @@ for i in range(train_steps + 1):
         tensor_train = {xs: np.concatenate([resampleGammaXYsc[0],np.squeeze(Xpat[train_pat2,:])]), ys_sc: resampleGammaXYsc[1], r_pat: Rmatrix(survtime[train_pat2]), c_pat: np.squeeze(censor[train_pat2]), lsc: resampleGammaXYsc[1].shape[0], lpat: len(train_pat2), kprob: do_prc}
 
         # calculate the transportation function (updated 2022/07/06)
-        M = sess.run(cost_t, feed_dict=tensor_train)
-        transportation_P = ot.emd(a=[], b=[], M=M)
-        tensor_train[trans_P] = transportation_P
-        # calculate the regularized transportation function (updated 2022/07/14)
-        # featureF, N_lsc = sess.run([layerF, lsc], feed_dict=tensor_train)
-        # ot_lpl1 = ot.da.SinkhornLpl1Transport(reg_e=1e-1, reg_cl=2e0)
-        # ot_lpl1.fit(Xs = featureF[:int(N_lsc), :], ys = tensor_train[ys_sc].argmax(1), Xt = featureF[int(N_lsc):, :])
-        # transportation_P = ot_lpl1.coupling_
+        # M = sess.run(cost_t, feed_dict=tensor_train)
+        # transportation_P = ot.emd(a=[], b=[], M=M)
         # tensor_train[trans_P] = transportation_P
+        # calculate the regularized transportation function (updated 2022/07/14)
+        featureF, N_lsc = sess.run([layerF, lsc], feed_dict=tensor_train)
+        ot_sinkhorn = ot.da.SinkhornTransport(reg_e=1e-1)
+        ot_sinkhorn.fit(Xs = featureF[:int(N_lsc), :], Xt = featureF[int(N_lsc):, :])
+        tensor_train[trans_P] = ot_sinkhorn.coupling_
         
         
     sess.run(train_step1, feed_dict=tensor_train)

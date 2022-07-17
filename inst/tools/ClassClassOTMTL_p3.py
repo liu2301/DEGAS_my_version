@@ -59,14 +59,14 @@ for i in range(train_steps+1):
                         ys_pat: resampleGammaXYpat[1], lsc: resampleGammaXYsc[1].shape[0], 
                         lpat: resampleGammaXYpat[1].shape[0], kprob: do_prc}
         # calculate the transportation function (updated 2022/06/29)
-        M = sess.run(cost_t, feed_dict=tensor_train)
-        transportation_P = ot.emd(a=[], b=[], M=M)
+        # M = sess.run(cost_t, feed_dict=tensor_train)
+        # transportation_P = ot.emd(a=[], b=[], M=M)
+        # tensor_train[trans_P] = transportation_P
         # calculate the regularized transportation function (updated 2022/06/30)
-        # featureF, N_lsc = sess.run([layerF, lsc], feed_dict=tensor_train)
-        # ot_lpl1 = ot.da.SinkhornLpl1Transport(reg_e=1e-1, reg_cl=2e0)
-        # ot_lpl1.fit(Xs = featureF[int(N_lsc):, :], ys = tensor_train[ys_pat].argmax(1), Xt = featureF[:int(N_lsc), :])
-        # transportation_P = ot_lpl1.coupling_
-        # tensor_train[trans_P] = np.transpose(transportation_P)
+        featureF, N_lsc = sess.run([layerF, lsc], feed_dict=tensor_train)
+        ot_sinkhornl1l2 = ot.da.SinkhornL1l2Transport(reg_e=1e-1, reg_cl=2e0)
+        ot_sinkhornl1l2.fit(Xs = featureF[int(N_lsc):, :], ys = resampleGammaXYpat[1].argmax(1), Xt = featureF[:int(N_lsc), :])
+        tensor_train[trans_P] = np.transpose(ot_sinkhornl1l2.coupling_)
         
     sess.run(train_step1, feed_dict=tensor_train)
     # BELOW IS UNTESTED
