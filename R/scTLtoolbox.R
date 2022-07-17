@@ -421,7 +421,7 @@ runCCMTL <- function(scExp,scLab,patExp,patLab,tmpDir,model_type,loss_type,archi
   writeInputFiles(scExp,scLab,patExp,patLab,tmpDir)
   message(checkForPy())
   system(paste0(DEGAS.pyloc," ",tmpDir,model_type,loss_type,"MTL.py ", tmpDir, " ",DEGAS.train_steps," ",DEGAS.scbatch_sz," ",DEGAS.patbatch_sz," ",DEGAS.hidden_feats," ",DEGAS.do_prc," ",DEGAS.lambda1," ",DEGAS.lambda2," ",DEGAS.lambda3," ",DEGAS.seed))
-  ccModel1 = readOutputFiles(tmpDir,model_type,architecture)
+  ccModel1 = readOutputFiles(tmpDir,model_type,loss_type,architecture)
   return(ccModel1)
 }
 
