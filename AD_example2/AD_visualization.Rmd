@@ -1,0 +1,10 @@
+---
+title: "AD_visualization"
+author: "Ziyu Liu"
+date: "2022/7/18"
+output: html_document
+---
+```{r}
+# load prediction results
+AD_prediction <- read.csv('AD_prediction.csv')
+```
