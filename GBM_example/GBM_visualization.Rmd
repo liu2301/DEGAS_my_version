@@ -1,0 +1,90 @@
+---
+title: "GBM_visualization"
+author: "Ziyu Liu"
+date: "2022/7/18"
+output: html_document
+---
+
+```{r}
+library("ggplot2")
+library("ggpubr")
+library("tidyverse")
+# load prediction results
+GBM_prediction <- read.csv('Prediction.csv', row.names=1)
+```
+
+
+```{r}
+GBM_summary <- data.frame(GBM_prediction %>% group_by(Patient) %>% summarize_at(vars(Mesenchymal), 
+                                                          list(Mesenchymal.Mean=mean)))
+Mesenchymal <- GBM_summary$Mesenchymal.Mean[2] + GBM_summary$Mesenchymal.Mean[3]
+Others <- GBM_summary$Mesenchymal.Mean[1] + GBM_summary$Mesenchymal.Mean[4] + GBM_summary$Mesenchymal.Mean[5]
+Mesenchymal_fold_change <- (Mesenchymal - Others) / abs(Mesenchymal)
+
+my_comparisons <- list(c("MGH28", "MGH26"), c("MGH28", "MGH30"), c("MGH28", "MGH31"),
+                       c("MGH29", "MGH26"), c("MGH29", "MGH30"), c("MGH29", "MGH31"))
+p <- ggboxplot(GBM_prediction, x='Patient', y='Mesenchymal', color='Patient', palette = "jco")
+p + stat_compare_means(comparisons=my_comparisons, method='t.test') + 
+  geom_text(
+  mapp = aes(x = 3, y = -Inf, label = paste0('FC = ', round(Mesenchymal_fold_change, digits=3))),
+  hjust   = -0.1,
+  vjust   = -1
+)
+ggsave("Mesenchymal_box.png")
+```
+```{r}
+GBM_summary <- data.frame(GBM_prediction %>% group_by(Patient) %>% summarize_at(vars(Proneural), 
+                                                          list(Proneural.Mean=mean)))
+Others <- sum(GBM_summary$Proneural.Mean[2:5])
+Proneural_fold_change <- (GBM_summary$Proneural.Mean[1] - Others) / abs(GBM_summary$Proneural.Mean[1])
+
+my_comparisons <- list(c("MGH26", "MGH28"), c("MGH26", "MGH29"), c("MGH26", "MGH30"), c("MGH26", "MGH31"))
+p <- ggboxplot(GBM_prediction, x='Patient', y='Proneural', color='Patient', palette = "jco")
+p + stat_compare_means(comparisons=my_comparisons, method='t.test') + 
+  geom_text(
+  mapp = aes(x = 3, y = -Inf, label = paste0('FC = ', round(Proneural_fold_change, digits=3))),
+  hjust   = -0.1,
+  vjust   = -1
+)
+ggsave("Proneural_box.png")
+```
+
+```{r}
+GBM_summary <- data.frame(GBM_prediction %>% group_by(Patient) %>% summarize_at(vars(Classical), 
+                                                          list(Classical.Mean=mean)))
+Others <- sum(GBM_summary$Classical.Mean) - GBM_summary$Classical.Mean[4]
+Classical_fold_change <- (GBM_summary$Classical.Mean[4] - Others) / abs(GBM_summary$Classical.Mean[4])
+
+my_comparisons <- list(c("MGH30", "MGH28"), c("MGH30", "MGH29"), c("MGH30", "MGH26"), c("MGH30", "MGH31"))
+p <- ggboxplot(GBM_prediction, x='Patient', y='Classical', color='Patient', palette = "jco")
+p + stat_compare_means(comparisons=my_comparisons, method='t.test')+ 
+  geom_text(
+  mapp = aes(x = 3, y = -Inf, label = paste0('FC = ', round(Classical_fold_change, digits=3))),
+  hjust   = -0.1,
+  vjust   = -1
+)
+ggsave("Classical_box.png")
+```
+
+
+```{r}
+GBM_rank <- GBM_prediction
+GBM_rank[, c(3, 4, 5, 6)] <- t(apply(GBM_prediction[, c(3, 4, 5, 6)], 1, order))
+GBM_rank <- cbind(GBM_rank[7], stack(GBM_rank[3:6]))
+```
+```{r}
+p <- ggboxplot(GBM_rank, x='ind', y='values', color='ind', palette = "jco",
+                facet.by='Patient', ylim=c(1, 5), x.axis=FALSE) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+my_comparisons <- list(c("Proneural", "Mesenchymal"), c("Proneural", "Classical"), c("Classical", "Mesenchymal"))
+p + stat_compare_means(comparisons=my_comparisons, method='t.test')
+ggsave("All_ranks.png")
+```
+
+
+
+
+
+
