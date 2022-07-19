@@ -1,0 +1,62 @@
+---
+title: "Sim_visualization"
+author: "Ziyu Liu"
+date: "2022/7/18"
+output: html_document
+---
+```{r}
+library("ggplot2")
+library("ggpubr")
+library("tidyverse")
+# load prediction results
+Sim_prediction <- read.csv('Prediction.csv', row.names=1)
+```
+
+```{r}
+Sim_summary <- Sim_prediction %>% group_by(CT) %>% summarize_at(vars(DisSim1), list(DisSim1.Mean=mean))
+Sim_fold_change <- data.frame(Sim_summary %>% mutate(dis_fold_change = (DisSim1.Mean[CT==1] - DisSim1.Mean) / abs(DisSim1.Mean[CT==1])))
+```
+
+
+```{r}
+my_comparisons <- list( c("1", "2"), c("1", "3"), c("1", "4") )
+p <- ggboxplot(Sim_prediction, x='CT', y='DisSim1', color='CT', palette = "jco")
+p + geom_text(
+  data = Sim_fold_change, 
+  mapp = aes(x = c(1, 2, 3, 4), y = -Inf, label = paste0('FC = ', round(dis_fold_change, digits=3))),
+  hjust   = -0.1,
+  vjust   = -1
+) + stat_compare_means(comparisons=my_comparisons, method='t.test')
+```
+
+```{r}
+Sim_summary <- Sim_prediction %>% group_by(CT) %>% summarize_at(vars(DisSim2), list(DisSim2.Mean=mean))
+Sim_fold_change <- data.frame(Sim_summary %>% mutate(dis_fold_change = (DisSim2.Mean[CT==4] - DisSim2.Mean) / abs(DisSim2.Mean[CT==4])))
+```
+
+```{r}
+my_comparisons <- list( c("4", "1"), c("4", "2"), c("4", "3") )
+p <- ggboxplot(Sim_prediction, x='CT', y='DisSim2', color='CT', palette = "jco")
+p + geom_text(
+  data = Sim_fold_change, 
+  mapp = aes(x = c(1, 2, 3, 4), y = -Inf, label = paste0('FC = ', round(dis_fold_change, digits=3))),
+  hjust   = -0.1,
+  vjust   = -1
+) + stat_compare_means(comparisons=my_comparisons, method='t.test')
+```
+```{r}
+Sim_summary <- Sim_prediction %>% group_by(CT) %>% summarize_at(vars(DisSim3), list(DisSim3.Mean=mean))
+Sim_fold_change <- data.frame(Sim_summary %>% mutate(dis_fold_change = (DisSim3.Mean[CT==4] - DisSim3.Mean) / abs(DisSim3.Mean[CT==4])))
+```
+
+```{r}
+my_comparisons <- list( c("4", "1"), c("4", "2"), c("4", "3") )
+p <- ggboxplot(Sim_prediction, x='CT', y='DisSim3', color='CT', palette = "jco")
+p + geom_text(
+  data = Sim_fold_change, 
+  mapp = aes(x = c(1, 2, 3, 4), y = -Inf, label = paste0('FC = ', round(dis_fold_change, digits=3))),
+  hjust   = -0.1,
+  vjust   = -1
+) + stat_compare_means(comparisons=my_comparisons, method='t.test')
+```
+
