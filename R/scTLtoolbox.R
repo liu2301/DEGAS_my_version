@@ -20,6 +20,7 @@ initDEGAS <- function(){
   DEGAS.lambda2 <<- 3.0
   DEGAS.lambda3 <<- 3.0
   DEGAS.seed <<- "NULL"
+  print("here we are")
 }
 
 #***************************************************************
