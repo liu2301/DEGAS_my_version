@@ -418,8 +418,12 @@ makeExec2 <- function(tmpDir,FFdepth,model_type){
 # train model wrapper function
 runCCMTL <- function(scExp,scLab,patExp,patLab,tmpDir,model_type,architecture,FFdepth){
   system('pwd')
-  system(paste0('rm -rf ',tmpDir))
-  system(paste0('mkdir ',tmpDir))
+  # system(paste0('rm -rf ',tmpDir))
+  if ! file.exists(tmpDir) {
+    system(paste0('mkdir ',tmpDir))
+  }
+  tmpDir <<- paste0(tmpDir, "/", "random", DEGAS.seed)
+  system(paste0('mkdir', tmpDir))
   message(paste0(as.character(FFdepth), "-layer ", architecture, " ",model_type, " DEGAS model"))
   if(architecture=="DenseNet"){
     makeExec2(tmpDir, FFdepth, model_type)
