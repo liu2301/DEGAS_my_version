@@ -422,22 +422,22 @@ runCCMTL <- function(scExp,scLab,patExp,patLab,tmpDir,model_type,architecture,FF
   if (! file.exists(tmpDir)) {
     system(paste0('mkdir ',tmpDir))
   }
-  tmpDir <- paste0(tmpDir, "/", "random", DEGAS.seed)
-  print(paste0('here we are mkdir ', tmpDir))
-  system(paste0('mkdir ', tmpDir))
+  newtmpDir <- paste0(tmpDir, "/", "random", DEGAS.seed)
+  print(paste0('here we are mkdir ', newtmpDir))
+  system(paste0('mkdir ', newtmpDir))
   message(paste0(as.character(FFdepth), "-layer ", architecture, " ",model_type, " DEGAS model"))
   if(architecture=="DenseNet"){
-    makeExec2(tmpDir, FFdepth, model_type)
+    makeExec2(newtmpDir, FFdepth, model_type)
   }else if(architecture=="Standard"){
-    makeExec(tmpDir, FFdepth, model_type)
+    makeExec(newtmpDir, FFdepth, model_type)
   }else{
     stop('Incorrect architecture argument')
   }
-  writeInputFiles(scExp,scLab,patExp,patLab,tmpDir)
+  writeInputFiles(scExp,scLab,patExp,patLab,newtmpDir)
   message(checkForPy())
-  print(paste0(DEGAS.pyloc," ",tmpDir,model_type,"MTL.py ", tmpDir, " ",DEGAS.train_steps," ",DEGAS.scbatch_sz," ",DEGAS.patbatch_sz," ",DEGAS.hidden_feats," ",DEGAS.do_prc," ",DEGAS.lambda1," ",DEGAS.lambda2," ",DEGAS.lambda3," ",DEGAS.seed," ",DEGAS.Norm_method," ",DEGAS.lambda4))
-  system(paste0(DEGAS.pyloc," ",tmpDir,model_type,"MTL.py ", tmpDir, " ",DEGAS.train_steps," ",DEGAS.scbatch_sz," ",DEGAS.patbatch_sz," ",DEGAS.hidden_feats," ",DEGAS.do_prc," ",DEGAS.lambda1," ",DEGAS.lambda2," ",DEGAS.lambda3," ",DEGAS.seed," ",DEGAS.Norm_method," ",DEGAS.lambda4))
-  ccModel1 = readOutputFiles(tmpDir,model_type,architecture)
+  print(paste0(DEGAS.pyloc," ",newtmpDir,model_type,"MTL.py ", newtmpDir, " ",DEGAS.train_steps," ",DEGAS.scbatch_sz," ",DEGAS.patbatch_sz," ",DEGAS.hidden_feats," ",DEGAS.do_prc," ",DEGAS.lambda1," ",DEGAS.lambda2," ",DEGAS.lambda3," ",DEGAS.seed," ",DEGAS.Norm_method," ",DEGAS.lambda4))
+  system(paste0(DEGAS.pyloc," ",newtmpDir,model_type,"MTL.py ", newtmpDir, " ",DEGAS.train_steps," ",DEGAS.scbatch_sz," ",DEGAS.patbatch_sz," ",DEGAS.hidden_feats," ",DEGAS.do_prc," ",DEGAS.lambda1," ",DEGAS.lambda2," ",DEGAS.lambda3," ",DEGAS.seed," ",DEGAS.Norm_method," ",DEGAS.lambda4))
+  ccModel1 = readOutputFiles(newtmpDir,model_type,architecture)
   return(ccModel1)
 }
 
