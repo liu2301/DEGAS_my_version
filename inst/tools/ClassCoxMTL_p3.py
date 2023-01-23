@@ -18,7 +18,7 @@ elif Norm_method == "KL":
     SCtoPT = tf.histogram_fixed_width(tf.reshape(tf.slice(predict_pat, [0, 0], [lsc, Lpat]), (1, lsc)), [0.0, 1.0], nbins = 10)
     unif_dist = tf.cast(tf.repeat(0.1, 10), dtype = tf.float32)
     KL = tf.keras.losses.KLDivergence()
-    lossConsttoPT = KL(unif_dist, tf.cast(SCtoPT / lsc, dtype = tf.float32))
+    lossConstSCtoPT = KL(unif_dist, tf.cast(SCtoPT / lsc, dtype = tf.float32))
 
 lossConstPTtoSC = tf.reduce_mean(tf.reduce_sum(tf.square(tf.slice(predict_sc,[lsc,0],[lpat,Lsc])-(1.0/Lsc)),reduction_indices=[1]))  #TESTING
 #lossConstPTtoPT = tf.reduce_mean(tf.reduce_sum(tf.square(tf.squeeze(tf.slice(predict_pat,[lsc,0],[lpat,Lpat]))-(1.0/2.0)))) 
