@@ -112,7 +112,7 @@ set_norm_method <- function(method, lambda4) {
   if(is.null(method) & is.null(lambda4)) {
     DEGAS.Norm_method <<- "DEFAULT"
     DEGAS.lambda4 <<- 1.0
-  }else if (is.character(method) & (method in c("DEFAULT", "KL", "MSE")) & is.numeric(lambda4) & length(lambda4) == 1) {
+  }else if (is.character(method) & (method %in% c("DEFAULT", "KL", "MSE")) & is.numeric(lambda4) & length(lambda4) == 1) {
     DEGAS.Norm_method <<- method
     DEGAS.lambda4 <<- 1.0
   }else {
