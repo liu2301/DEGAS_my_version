@@ -7,11 +7,23 @@ predictae_sc2pat = add_layer(layerae_sc2pat,hidden_feats,Lpat,activation_functio
 lossLabel1 = tf.reduce_mean(tf.reduce_sum(tf.square(ys_sc-tf.slice(predict_sc,[0,0],[lsc,Lsc])),reduction_indices=[1]))				# FIX HERE
 lossLabel2 = -tf.reduce_mean((tf.squeeze(tf.slice(predict_pat,[lsc,0],[lpat,Lpat])) - tf.log(tf.reduce_sum(tf.exp(tf.squeeze(tf.slice(predict_pat,[lsc,0],[lpat,Lpat]))) * r_pat, 1))) * c_pat)		# FIX HERE
 lossMMD = mmd_loss(tf.slice(layerF,[0,0],[lsc,hidden_feats]),tf.slice(layerF,[lsc,0],[lpat,hidden_feats]))
-lossConstSCtoPT = tf.reduce_mean(tf.reduce_sum(tf.square(tf.slice(predict_pat,[0,0],[lsc,Lpat])-(1.0/2.0)),reduction_indices=[1]))  #TESTING
+# lossConstSCtoPT = tf.reduce_mean(tf.reduce_sum(tf.square(tf.slice(predict_pat,[0,0],[lsc,Lpat])-(1.0/2.0)),reduction_indices=[1]))  #TESTING
+if Norm_method == "DEFAULT":
+    lossConstSCtoPT = tf.reduce_mean(tf.reduce_sum(tf.square(tf.slice(predict_pat,[0,0],[lsc,Lpat])-(1.0/2.0)),reduction_indices=[1]))  #TESTING
+elif Norm_method == "MSE":
+    SCtoPT = tf.sort(tf.squeeze(tf.slice(predict_pat, [0, 0], [lsc, Lpat])))
+    unif_ref = tf.cast(tf.range(0.0, 1.0, 1 / lsc), dtype = tf.float32)
+    lossConstSCtoPT = tf.keras.metrics.mean_squared_error(unif_ref, SCtoPT)
+elif Norm_method == "KL":
+    SCtoPT = tf.histogram_fixed_width(tf.reshape(tf.slice(predict_pat, [0, 0], [lsc, Lpat]), (1, lsc)), [0.0, 1.0], nbins = 10)
+    unif_dist = tf.cast(tf.repeat(0.1, 10), dtype = tf.float32)
+    KL = tf.keras.losses.KLDivergence()
+    lossConsttoPT = KL(unif_dist, tf.cast(SCtoPT / lsc, dtype = tf.float32))
+
 lossConstPTtoSC = tf.reduce_mean(tf.reduce_sum(tf.square(tf.slice(predict_sc,[lsc,0],[lpat,Lsc])-(1.0/Lsc)),reduction_indices=[1]))  #TESTING
 #lossConstPTtoPT = tf.reduce_mean(tf.reduce_sum(tf.square(tf.squeeze(tf.slice(predict_pat,[lsc,0],[lpat,Lpat]))-(1.0/2.0)))) 
 #*************Use below cost functions**********************
-loss = 2*lossLabel1 + lambda2*lossLabel2 +lambda3*lossMMD + lossConstSCtoPT + lossConstPTtoSC
+loss = 2*lossLabel1 + lambda2*lossLabel2 +lambda3*lossMMD + lambda4*lossConstSCtoPT + lossConstPTtoSC
 lossae_sc2pat = tf.reduce_mean(tf.reduce_sum(tf.square(ps-predictae_sc2pat),reduction_indices=[1]))
 train_step1 = tf.train.AdamOptimizer(learning_rate=0.01,epsilon=1e-3).minimize(loss)
 train_step2 = tf.train.AdamOptimizer(learning_rate=0.01,epsilon=1e-3).minimize(lossae_sc2pat)

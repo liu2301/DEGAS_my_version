@@ -419,7 +419,7 @@ makeExec2 <- function(tmpDir,FFdepth,model_type){
 runCCMTL <- function(scExp,scLab,patExp,patLab,tmpDir,model_type,architecture,FFdepth){
   system('pwd')
   # system(paste0('rm -rf ',tmpDir))
-  if ! file.exists(tmpDir) {
+  if (! file.exists(tmpDir)) {
     system(paste0('mkdir ',tmpDir))
   }
   tmpDir <<- paste0(tmpDir, "/", "random", DEGAS.seed)
