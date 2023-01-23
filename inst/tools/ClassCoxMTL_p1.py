@@ -317,8 +317,8 @@ do_prc = float(sys.argv[6])
 lambda1 = float(sys.argv[7])
 lambda2 = float(sys.argv[8])
 lambda3 = float(sys.argv[9])
-Norm_method = str(sys.argv[10])
-lambda4 = float(sys.argv[11])
+Norm_method = str(sys.argv[11])
+lambda4 = float(sys.argv[12])
 
 #***********************************************************************
 # Building network
