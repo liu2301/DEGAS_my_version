@@ -1,9 +1,9 @@
 #***************************************************************
 #***************************************************************
 # Single Cell Transfer Learning Toolbox
-# Travis S Johnson, Zhi Huang
+# Travis S Johnson and Zhi Huang
 # Compatible with OSX and Linux
-# Ziyu Modified at July 15th, 2022, test again
+
 #***************************************************************
 #***************************************************************
 # Initializing the package
@@ -20,7 +20,9 @@ initDEGAS <- function(){
   DEGAS.lambda2 <<- 3.0
   DEGAS.lambda3 <<- 3.0
   DEGAS.seed <<- "NULL"
-  print("here we are")
+  DEGAS.Norm_method <<- "DEFAULT"
+  DEGAS.lambda4 <<- 1.0
+  print("This is a new version of DEGAS")
 }
 
 #***************************************************************
@@ -104,7 +106,20 @@ set_seed_term <- function(inp){
     message("ERROR: Input proper seed (NULL or integer)")
     message("Non-integer values will equal floor(value)")
    }
- }
+}
+# Manually reset the normalization method
+set_norm_method <- function(method, lambda4) {
+  if(is.null(method) & is.null(lambda4)) {
+    DEGAS.Norm_method <<- "DEFAULT"
+    DEGAS.lambda4 <<- 1.0
+  }else if (is.character(method) & (method in c("DEFAULT", "KL", "MSE")) & is.numeric(lambda4) & length(lambda4) == 1) {
+    DEGAS.Norm_method <<- method
+    DEGAS.lambda4 <<- 1.0
+  }else {
+    Message("ERROR: Could not set score normalization method!")
+    Message("Method options: 'DEFAULT', 'KL', and 'MSE'.")
+  }
+}
 
 #***************************************************************
 #***************************************************************
@@ -112,7 +127,7 @@ set_seed_term <- function(inp){
 
 # ccModel class
 setClass("ccModel",slots=list(Bias="list",Theta="list",Activation="list",
-                              Depth="numeric",Model_type="character",Loss_type="character",Architecture="character"))
+                              Depth="numeric",Model_type="character",Architecture="character"))
 
 # zscore normalization
 normFunc <- function(x){return((x-mean(x, na.rm = T))/(sd(x, na.rm = T)+1e-3))}
@@ -210,7 +225,7 @@ writeInputFiles <- function(scExp,scLab,patExp,patLab,tmpDir){
 }
 
 # Read output files from tensorflow python algorithm into R
-readOutputFiles <- function(tmpDir,Model_type,Loss_type,architecture){
+readOutputFiles <- function(tmpDir,Model_type,architecture){
   activations = read.table(file=paste0(tmpDir, 'Activations.csv'), row.names=NULL, header=FALSE, sep=',',stringsAsFactors=FALSE)
   activations = activations[[1]]
   depth = length(activations)
@@ -230,19 +245,16 @@ readOutputFiles <- function(tmpDir,Model_type,Loss_type,architecture){
     eval(parse(text=paste0("Thetas[[",as.character(cnt),"]]=","Theta",as.character(cnt))))
     eval(parse(text=paste0("Activations[[",as.character(cnt),"]]=activation")))
   }
-  return(new('ccModel',Bias=Biases,Theta=Thetas,Activation=Activations,Depth=depth,Model_type=Model_type,Loss_type=Loss_type,Architecture=architecture))
+  return(new('ccModel',Bias=Biases,Theta=Thetas,Activation=Activations,Depth=depth,Model_type=Model_type,Architecture=architecture))
 }
 
 # Make python executable for standard (feedforward) implementation
-makeExec <- function(tmpDir,FFdepth,model_type,loss_type){
+makeExec <- function(tmpDir,FFdepth,model_type){
   if (model_type != 'ClassClass' && model_type != 'ClassCox' && model_type != 'ClassBlank' && model_type != 'BlankClass' && model_type!='BlankCox'){
     stop("Please specify either 'BlankClass', 'ClassBlank', 'BlankCox', ClassClass' or 'ClassCox' for the model_type")
   }
-  if (loss_type != 'MMD' && loss_type != 'OT') {
-    stop("Please specify either 'MMD' or 'OT' for the loss_type")
-  }
-  system(paste0('cp ',DEGAS.toolsPath,model_type,loss_type,'MTL_p1.py ',tmpDir))
-  system(paste0('cp ',DEGAS.toolsPath,model_type,loss_type,'MTL_p3.py ',tmpDir))
+  system(paste0('cp ',DEGAS.toolsPath,model_type,'MTL_p1.py ',tmpDir))
+  system(paste0('cp ',DEGAS.toolsPath,model_type,'MTL_p3.py ',tmpDir))
   outlines = c()
   if (FFdepth == 1){
     outlines[length(outlines)+1] = "layerF=add_layer(xs,Fsc,hidden_feats,activation_function=tf.sigmoid,dropout_function=True,lambda1=lambda1, keep_prob1=kprob)"
@@ -257,7 +269,7 @@ makeExec <- function(tmpDir,FFdepth,model_type,loss_type){
       }
     }
   }
-  fout = file(paste0(tmpDir,model_type,loss_type,'MTL_p2.py'))
+  fout = file(paste0(tmpDir,model_type,'MTL_p2.py'))
   writeLines(outlines,fout)
   close(fout)
   outlines = c()
@@ -304,22 +316,19 @@ makeExec <- function(tmpDir,FFdepth,model_type,loss_type){
       outlines[length(outlines)+1] = "    f.write('sigmoid\\n')"
     }
   }
-  fout = file(paste0(tmpDir,model_type,loss_type,'MTL_p4.py'))
+  fout = file(paste0(tmpDir,model_type,'MTL_p4.py'))
   writeLines(outlines,fout)
   close(fout)
-  system(paste0("cat ",tmpDir,model_type,loss_type,"MTL_p1.py ",tmpDir,model_type,loss_type,"MTL_p2.py ",tmpDir,model_type,loss_type,"MTL_p3.py ",tmpDir,model_type,loss_type,"MTL_p4.py > ",tmpDir,model_type,loss_type,"MTL.py"))
+  system(paste0("cat ",tmpDir,model_type,"MTL_p1.py ",tmpDir,model_type,"MTL_p2.py ",tmpDir,model_type,"MTL_p3.py ",tmpDir,model_type,"MTL_p4.py > ",tmpDir,model_type,"MTL.py"))
 }
 
 # Make python executable for densenet implementation
-makeExec2 <- function(tmpDir,FFdepth,model_type,loss_type){
+makeExec2 <- function(tmpDir,FFdepth,model_type){
   if (model_type != 'ClassClass' && model_type != 'ClassCox' && model_type != 'ClassBlank' && model_type != 'BlankClass' && model_type!='BlankCox'){
     stop("Please specify either 'BlankClass', 'ClassBlank', 'BlankCox', ClassClass' or 'ClassCox' for the model_type")
   }
-  if (loss_type != 'MMD' && loss_type != 'OT') {
-    stop("Please specify either 'MMD' or 'OT' for the loss_type")
-  }
-  system(paste0('cp ',DEGAS.toolsPath,model_type,loss_type,'MTL_p1.py ',tmpDir))
-  system(paste0('cp ',DEGAS.toolsPath,model_type,loss_type,'MTL_p3.py ',tmpDir))
+  system(paste0('cp ',DEGAS.toolsPath,model_type,'MTL_p1.py ',tmpDir))
+  system(paste0('cp ',DEGAS.toolsPath,model_type,'MTL_p3.py ',tmpDir))
   outlines = c()
   if (FFdepth == 1){
     outlines[length(outlines)+1] = "layerF=add_layer(xs,Fsc,hidden_feats,activation_function=tf.sigmoid,dropout_function=True,lambda1=lambda1, keep_prob1=kprob)"
@@ -353,7 +362,7 @@ makeExec2 <- function(tmpDir,FFdepth,model_type,loss_type){
       }
     }
   }
-  fout = file(paste0(tmpDir,model_type,loss_type,'MTL_p2.py'))
+  fout = file(paste0(tmpDir,model_type,'MTL_p2.py'))
   writeLines(outlines,fout)
   close(fout)
   outlines = c()
@@ -400,39 +409,39 @@ makeExec2 <- function(tmpDir,FFdepth,model_type,loss_type){
       outlines[length(outlines)+1] = "    f.write('sigmoid\\n')"
     }
   }
-  fout = file(paste0(tmpDir,model_type,loss_type,'MTL_p4.py'))
+  fout = file(paste0(tmpDir,model_type,'MTL_p4.py'))
   writeLines(outlines,fout)
   close(fout)
-  system(paste0("cat ",tmpDir,model_type,loss_type,"MTL_p1.py ",tmpDir,model_type,loss_type,"MTL_p2.py ",tmpDir,model_type,loss_type,"MTL_p3.py ",tmpDir,model_type,loss_type,"MTL_p4.py > ",tmpDir,model_type,loss_type,"MTL.py"))
+  system(paste0("cat ",tmpDir,model_type,"MTL_p1.py ",tmpDir,model_type,"MTL_p2.py ",tmpDir,model_type,"MTL_p3.py ",tmpDir,model_type,"MTL_p4.py > ",tmpDir,model_type,"MTL.py"))
 }
 
 # train model wrapper function
-runCCMTL <- function(scExp,scLab,patExp,patLab,tmpDir,model_type,loss_type,architecture,FFdepth){
+runCCMTL <- function(scExp,scLab,patExp,patLab,tmpDir,model_type,architecture,FFdepth){
   system('pwd')
   system(paste0('rm -rf ',tmpDir))
   system(paste0('mkdir ',tmpDir))
-  message(paste0(as.character(FFdepth), "-layer ", architecture, " ",model_type, " ", loss_type, " DEGAS model"))
+  message(paste0(as.character(FFdepth), "-layer ", architecture, " ",model_type, " DEGAS model"))
   if(architecture=="DenseNet"){
-    makeExec2(tmpDir, FFdepth, model_type, loss_type)
+    makeExec2(tmpDir, FFdepth, model_type)
   }else if(architecture=="Standard"){
-    makeExec(tmpDir, FFdepth, model_type, loss_type)
+    makeExec(tmpDir, FFdepth, model_type)
   }else{
     stop('Incorrect architecture argument')
   }
   writeInputFiles(scExp,scLab,patExp,patLab,tmpDir)
   message(checkForPy())
-  system(paste0(DEGAS.pyloc," ",tmpDir,model_type,loss_type,"MTL.py ", tmpDir, " ",DEGAS.train_steps," ",DEGAS.scbatch_sz," ",DEGAS.patbatch_sz," ",DEGAS.hidden_feats," ",DEGAS.do_prc," ",DEGAS.lambda1," ",DEGAS.lambda2," ",DEGAS.lambda3," ",DEGAS.seed))
-  ccModel1 = readOutputFiles(tmpDir,model_type,loss_type,architecture)
+  system(paste0(DEGAS.pyloc," ",tmpDir,model_type,"MTL.py ", tmpDir, " ",DEGAS.train_steps," ",DEGAS.scbatch_sz," ",DEGAS.patbatch_sz," ",DEGAS.hidden_feats," ",DEGAS.do_prc," ",DEGAS.lambda1," ",DEGAS.lambda2," ",DEGAS.lambda3," ",DEGAS.seed))
+  ccModel1 = readOutputFiles(tmpDir,model_type,architecture)
   return(ccModel1)
 }
 
 # Bootstrap aggregation wrapper for model training
-runCCMTLBag <- function(scExp,scLab,patExp,patLab,tmpDir,model_type,loss_type,architecture,FFdepth,Bagdepth){
+runCCMTLBag <- function(scExp,scLab,patExp,patLab,tmpDir,model_type,architecture,FFdepth,Bagdepth){
   orig_degas_seed = DEGAS.seed
   out <- list()
   for(i in 1:Bagdepth){
     DEGAS.seed <<- orig_degas_seed + (i-1)
-    out[[i]] <- runCCMTL(scExp,scLab,patExp,patLab,tmpDir,model_type,loss_type,architecture,FFdepth)
+    out[[i]] <- runCCMTL(scExp,scLab,patExp,patLab,tmpDir,model_type,architecture,FFdepth)
   }
   DEGAS.seed <<- orig_degas_seed
   return(out)
