@@ -434,7 +434,8 @@ runCCMTL <- function(scExp,scLab,patExp,patLab,tmpDir,model_type,architecture,FF
   }
   writeInputFiles(scExp,scLab,patExp,patLab,tmpDir)
   message(checkForPy())
-  system(paste0(DEGAS.pyloc," ",tmpDir,model_type,"MTL.py ", tmpDir, " ",DEGAS.train_steps," ",DEGAS.scbatch_sz," ",DEGAS.patbatch_sz," ",DEGAS.hidden_feats," ",DEGAS.do_prc," ",DEGAS.lambda1," ",DEGAS.lambda2," ",DEGAS.lambda3," ",DEGAS.seed, " ", DEGAS.Norm_method, " ", DEGAS.lambda4))
+  print(paste0(DEGAS.pyloc," ",tmpDir,model_type,"MTL.py ", tmpDir, " ",DEGAS.train_steps," ",DEGAS.scbatch_sz," ",DEGAS.patbatch_sz," ",DEGAS.hidden_feats," ",DEGAS.do_prc," ",DEGAS.lambda1," ",DEGAS.lambda2," ",DEGAS.lambda3," ",DEGAS.seed," ",DEGAS.Norm_method," ",DEGAS.lambda4))
+  system(paste0(DEGAS.pyloc," ",tmpDir,model_type,"MTL.py ", tmpDir, " ",DEGAS.train_steps," ",DEGAS.scbatch_sz," ",DEGAS.patbatch_sz," ",DEGAS.hidden_feats," ",DEGAS.do_prc," ",DEGAS.lambda1," ",DEGAS.lambda2," ",DEGAS.lambda3," ",DEGAS.seed," ",DEGAS.Norm_method," ",DEGAS.lambda4))
   ccModel1 = readOutputFiles(tmpDir,model_type,architecture)
   return(ccModel1)
 }
