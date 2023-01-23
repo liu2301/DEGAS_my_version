@@ -422,8 +422,8 @@ runCCMTL <- function(scExp,scLab,patExp,patLab,tmpDir,model_type,architecture,FF
   if (! file.exists(tmpDir)) {
     system(paste0('mkdir ',tmpDir))
   }
-  tmpDir <<- paste0(tmpDir, "/", "random", DEGAS.seed)
-  print(paste0('mkdir ', tmpDir))
+  tmpDir <- paste0(tmpDir, "/", "random", DEGAS.seed)
+  print(paste0('here we are mkdir ', tmpDir))
   system(paste0('mkdir ', tmpDir))
   message(paste0(as.character(FFdepth), "-layer ", architecture, " ",model_type, " DEGAS model"))
   if(architecture=="DenseNet"){
