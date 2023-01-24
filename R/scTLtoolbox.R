@@ -114,7 +114,7 @@ set_norm_method <- function(method, lambda4) {
     DEGAS.lambda4 <<- 1.0
   }else if (is.character(method) & (method %in% c("DEFAULT", "KL", "MSE")) & is.numeric(lambda4) & length(lambda4) == 1) {
     DEGAS.Norm_method <<- method
-    DEGAS.lambda4 <<- 1.0
+    DEGAS.lambda4 <<- lambda4
   }else {
     Message("ERROR: Could not set score normalization method!")
     Message("Method options: 'DEFAULT', 'KL', and 'MSE'.")
